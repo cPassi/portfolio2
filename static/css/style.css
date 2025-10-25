@@ -1,0 +1,47 @@
+/* Container */
+.about-section {
+  background-color: #f9f9fb;
+  padding: 3rem 1rem;
+}
+
+/* Karte */
+.about-card {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Profilbild */
+.profile-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Überschriften */
+.about-card h3 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Listen */
+.about-card ul, .about-card ol {
+  margin-left: 1.5rem;
+  color: #555;
+}
+
+/* Stärken & Hobbys in Kacheln */
+.badge-custom {
+  display: inline-block;
+  background-color: #e0e7ff;
+  color: #1e3a8a;
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  margin: 0.25rem;
+  font-size: 0.9rem;
+}

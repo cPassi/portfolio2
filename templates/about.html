@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="about-section">
+  <div class="container">
+    <!-- Profilkarte -->
+    <div class="about-card text-center">
+      <img src="{{ url_for('static', filename='images/profil.jpg') }}"
+           alt="Pascal Potthoff"
+           class="profile-img mb-3">
+      <h2>{{ name }}, {{ age }}</h2>
+      <p class="text-muted">{{ location }}</p>
+      <p>{{ bio }}</p>
+    </div>
+
+    <!-- Ausbildung & Studium -->
+    <div class="about-card">
+      <h3>Ausbildung & Studium</h3>
+      <ul>
+        {% for edu in education %}
+        <li>
+          <strong>{{ edu.title }}</strong>
+          {% if edu.institution %} – {{ edu.institution }}{% endif %}
+          {% if edu.period %} ({{ edu.period }}){% endif %}
+          {% if edu.thesis %}<br><em>{{ edu.thesis }}</em>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Praxiseinsätze -->
+    <div class="about-card">
+      <h3>Praxiseinsätze bei Arvato</h3>
+      <ul>
+        {% for intern in internships %}
+        <li>
+          <strong>{{ intern.department }}</strong> ({{ intern.period }})
+          {% if intern.details %}<p class="mb-0">{{ intern.details }}</p>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- Abschlussprojekt -->
+    <div class="about-card">
+      <h3>Abschlussprojekt</h3>
+      <p><strong>{{ project.title }}</strong>: {{ project.description }}</p>
+    </div>
+
+    <!-- Skills, Stärken & Freizeit -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="about-card">
+          <h3>Skills</h3>
+          {% for skill in skills %}
+          <span class="badge-custom">{{ skill }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="about-card">
+          <h3>Stärken & Freizeit</h3>
+          {% for strength in strengths %}
+          <span class="badge-custom">{{ strength }}</span>
+          {% endfor %}
+          <hr>
+          {% for hobby in hobbies %}
+          <span class="badge-custom">{{ hobby }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

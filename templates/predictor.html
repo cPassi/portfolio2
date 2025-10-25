@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dortmund Match Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FFE000;
+            --secondary: #FDB500;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        .predictor-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            margin: 40px auto;
+            max-width: 600px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-select, .form-check-input {
+            border-color: #ddd;
+        }
+        
+        .form-select:focus, .form-check-input:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 0.2rem rgba(253, 181, 0, 0.25);
+        }
+        
+        .btn-predict {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: #000;
+            font-weight: 600;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-predict:hover {
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 181, 0, 0.4);
+        }
+        
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .prediction-value {
+            font-size: 3em;
+            font-weight: 700;
+            color: var(--secondary);
+            text-align: center;
+        }
+        
+        .result-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95em;
+        }
+        
+        .result-detail:last-child {
+            border-bottom: none;
+        }
+        
+        .error {
+            display: none;
+            padding: 15px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #666;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        
+        .back-link a:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="predictor-card">
+        <div class="header">
+            <h1>BVB Predictor</h1>
+            <p>Machine Learning Vorhersage für Dortmund Spiele</p>
+        </div>
+        
+        <form id="predictForm">
+            <div class="form-group mb-3">
+                <label for="opponent" class="form-label">Gegner wählen:</label>
+                <select class="form-select" id="opponent" required>
+                    <option value="">-- Gegner auswählen --</option>
+                    {% for opp in opponents %}
+                    <option value="{{ opp }}">{{ opp }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group mb-4">
+                <label class="form-label">Spielort:</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="location" id="home" value="1" checked>
+                    <label class="form-check-label" for="home">
+                         Heimspiel
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="location" id="away" value="0">
+                    <label class="form-check-label" for="away">
+                         Auswärtsspiel
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-predict btn-lg w-100">Vorhersage berechnen</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div> Berechne...
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="result" id="result">
+            <div class="prediction-value" id="predictionValue">-</div>
+            <p class="text-center text-muted mb-3">Erwartete Tore</p>
+            <hr>
+            <div id="details"></div>
+        </div>
+        
+        <div class="back-link">
+            <a href="/projects">← Zurück zu Projekten</a>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('predictForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const opponent = document.getElementById('opponent').value;
+            const is_home = document.querySelector('input[name="location"]:checked').value;
+            
+            document.getElementById('error').classList.remove('show');
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ opponent, is_home })
+                });
+                
+                const data = await response.json();
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.success) {
+                    document.getElementById('predictionValue').textContent = data.prediction;
+                    
+                    const details = `
+                        <div class="result-detail">
+                            <span><strong>Gegner:</strong></span>
+                            <span>${data.opponent}</span>
+                        </div>
+                        <div class="result-detail">
+                            <span><strong>Spielort:</strong></span>
+                            <span>${data.location}</span>
+                        </div>
+                        <div class="result-detail">
+                            <span><strong>Dortmund Elo:</strong></span>
+                            <span>${data.dortmund_elo}</span>
+                        </div>
+                        <div class="result-detail">
+                            <span><strong>${data.opponent} Elo:</strong></span>
+                            <span>${data.opponent_elo}</span>
+                        </div>
+                        <div class="result-detail">
+                            <span><strong>H2H Bilanz:</strong></span>
+                            <span>${data.h2h_wins}W / ${data.h2h_draws}D / ${data.h2h_losses}L</span>
+                        </div>
+                    `;
+                    document.getElementById('details').innerHTML = details;
+                    document.getElementById('result').classList.add('show');
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                showError('Fehler: ' + error.message);
+            }
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = '❌ ' + message;
+            errorDiv.classList.add('show');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="container py-5">
+  <h2 class="mb-4">Projekte</h2>
+  <div class="row g-4">
+    {% for proj in projects %}
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title">{{ proj.title }}</h3>
+          <p class="card-text">{{ proj.summary }}</p>
+        </div>
+        <div class="card-footer bg-white">
+          <small class="text-muted">Technologien:</small>
+          {% for tech in proj.technologies %}
+          <span class="badge bg-secondary me-1">{{ tech }}</span>
+          {% endfor %}
+        </div>
+        {% if proj.link %}
+        <div class="card-footer bg-light">
+          <a href="{{ proj.link }}" class="btn btn-sm btn-primary">Projekt ansehen →</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

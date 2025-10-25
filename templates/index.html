@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero-Section -->
+<section class="bg-light text-center py-5">
+  <div class="container">
+    <h1 class="display-4 mb-3">Willkommen</h1>
+    <p class="lead mb-4">
+      Ich bin <strong>Pascal Potthoff</strong>, leidenschaftlicher
+      Fußballer &amp; Cyber Security Enthusiast.
+    </p>
+    <a href="{{ url_for('about') }}" class="btn btn-primary btn-lg">Mehr über mich</a>
+  </div>
+</section>
+
+<!-- Kurze Vorstellung -->
+<section class="container py-5">
+  <div class="row align-items-center">
+    <div class="col-md-6">
+      <h2 class="mb-3">Überblick</h2>
+      <p>
+        Nach Abschluss meines dualen Studiums in Wirtschaftsinformatik mit Schwerpunkt 
+        Cyber Security bei Arvato Systems suche ich eine Werkstudentenstelle im Bereich 
+        AI oder Cyber Security. Ich bringe fundiertes theoretisches Wissen zur Cyber Security mit 
+        und möchte praktische Erfahrung in sicheren IT-Umgebungen sammeln. Langfristig 
+        plane ich, einen Master in AI oder Data Science zu absolvieren.
+      </p>
+      <a href="{{ url_for('projects') }}" class="btn btn-outline-secondary">
+        Meine Projekte ansehen
+      </a>
+    </div>
+    <div class="col-md-6 text-center">
+      <img src="{{ url_for('static', filename='images/hero.jpg') }}"
+           alt="Pascal beim Fußballspielen"
+           class="img-fluid rounded shadow">
+    </div>
+  </div>
+</section>
+
+<!-- Skills-Highlight -->
+<section class="bg-primary text-white py-5">
+  <div class="container text-center">
+    <h2 class="mb-4">Meine Kernkompetenzen</h2>
+    <div class="d-flex flex-wrap justify-content-center gap-2">
+      {% for skill in ['Python','AI','Cyber Security','SQL','Teamwork'] %}
+      <span class="badge bg-light text-primary fs-6 px-3 py-2">{{ skill }}</span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
