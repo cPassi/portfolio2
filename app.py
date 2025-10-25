@@ -208,5 +208,5 @@ def predict():
 
 
 if __name__ == '__main__':
-    # Nur lokal für Debugging
+    # Nur lokal für Debugging ja
     app.run(debug=True, port=5000)
