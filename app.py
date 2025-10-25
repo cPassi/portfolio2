@@ -1,14 +1,22 @@
 from flask import Flask, render_template, request, jsonify
-import pandas as pd
-import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-from datetime import timedelta
+# import pandas as pd
+# import numpy as np
+# from sklearn.linear_model import LinearRegression
+# from sklearn.model_selection import train_test_split
+# from datetime import timedelta
 from pathlib import Path
 import os
 
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
+
+PREDICTIONS = {
+    'Köln': {'prediction': 2.86, 'elo_dortmund': 1800, 'elo_opponent': 1600},
+    'Bayern': {'prediction': 2.45, 'elo_dortmund': 1800, 'elo_opponent': 1850},
+    'Freiburg': {'prediction': 2.12, 'elo_dortmund': 1800, 'elo_opponent': 1700},
+    'Bayer Leverkusen': {'prediction': 2.34, 'elo_dortmund': 1800, 'elo_opponent': 1800},
+    'RB Leipzig': {'prediction': 2.56, 'elo_dortmund': 1800, 'elo_opponent': 1780},
+}
 
 @app.route('/')
 def home():
@@ -113,99 +121,130 @@ def projects():
 # DORTMUND PREDICTOR - SETUP BEIM APP START
 # ============================================================
 
-BASE_DIR = Path(__file__).parent
-csv_path = BASE_DIR / 'data' / 'dortmund_with_h2h.csv'
-dortmund_df = None
-model = None
-opponents = []
+# BASE_DIR = Path(__file__).parent
+# csv_path = BASE_DIR / 'data' / 'dortmund_with_h2h.csv'
+# dortmund_df = None
+# model = None
+# opponents = []
 
-if os.path.exists(csv_path):
-    try:
-        dortmund_df = pd.read_csv(csv_path)
-        dortmund_df['MatchDate'] = pd.to_datetime(dortmund_df['MatchDate'])
+# if os.path.exists(csv_path):
+#     try:
+#         dortmund_df = pd.read_csv(csv_path)
+#         dortmund_df['MatchDate'] = pd.to_datetime(dortmund_df['MatchDate'])
         
-        # Filtere nur Teams der letzten 3 Jahre
-        cutoff_date = dortmund_df['MatchDate'].max() - timedelta(days=3*365)
-        valid_teams_mask = dortmund_df.groupby('Opponent')['MatchDate'].transform('max') >= cutoff_date
-        dortmund_df = dortmund_df[valid_teams_mask].copy()
+#         # Filtere nur Teams der letzten 3 Jahre
+#         cutoff_date = dortmund_df['MatchDate'].max() - timedelta(days=3*365)
+#         valid_teams_mask = dortmund_df.groupby('Opponent')['MatchDate'].transform('max') >= cutoff_date
+#         dortmund_df = dortmund_df[valid_teams_mask].copy()
         
-        # Trainiere Modell
-        feature_columns = [
-            'IsHome', 'DortmundElo', 'OpponentElo', 'DortmundForm5', 'OpponentForm5',
-            'H2H_Games', 'H2H_DortmundWins', 'H2H_Draws', 'H2H_DortmundLosses',
-            'H2H_AvgGoalsFor', 'H2H_AvgGoalsAgainst'
-        ]
+#         # Trainiere Modell
+#         feature_columns = [
+#             'IsHome', 'DortmundElo', 'OpponentElo', 'DortmundForm5', 'OpponentForm5',
+#             'H2H_Games', 'H2H_DortmundWins', 'H2H_Draws', 'H2H_DortmundLosses',
+#             'H2H_AvgGoalsFor', 'H2H_AvgGoalsAgainst'
+#         ]
         
-        X = dortmund_df[feature_columns]
-        y = dortmund_df['DortmundGoals']
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+#         X = dortmund_df[feature_columns]
+#         y = dortmund_df['DortmundGoals']
+#         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         
-        model = LinearRegression()
-        model.fit(X_train, y_train)
+#         model = LinearRegression()
+#         model.fit(X_train, y_train)
         
-        opponents = sorted(dortmund_df['Opponent'].unique().tolist())
-        print("✅ Dortmund Predictor geladen")
-    except Exception as e:
-        print(f"⚠️  Predictor konnte nicht geladen werden: {e}")
+#         opponents = sorted(dortmund_df['Opponent'].unique().tolist())
+#         print("✅ Dortmund Predictor geladen")
+#     except Exception as e:
+#         print(f"⚠️  Predictor konnte nicht geladen werden: {e}")
 
 # ============================================================
 # PREDICTOR ROUTES
 # ============================================================
 
+# @app.route('/predictor')
+# def predictor():
+#     """Predictor Page"""
+#     if model is None:
+#         return "Error: Predictor data not loaded", 500
+#     return render_template('predictor.html', opponents=opponents)
+
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     """API für Vorhersagen"""
+#     try:
+#         if model is None or dortmund_df is None:
+#             return jsonify({'success': False, 'error': 'Predictor not loaded'}), 500
+        
+#         data = request.json
+#         opponent = data.get('opponent')
+#         is_home = int(data.get('is_home'))
+        
+#         opponent_data = dortmund_df[dortmund_df['Opponent'] == opponent].tail(1)
+        
+#         if len(opponent_data) == 0:
+#             return jsonify({'success': False, 'error': f'Gegner nicht gefunden'}), 400
+        
+#         input_features = [
+#             is_home,
+#             opponent_data['DortmundElo'].values[0],
+#             opponent_data['OpponentElo'].values[0],
+#             opponent_data['DortmundForm5'].values[0],
+#             opponent_data['OpponentForm5'].values[0],
+#             opponent_data['H2H_Games'].values[0],
+#             opponent_data['H2H_DortmundWins'].values[0],
+#             opponent_data['H2H_Draws'].values[0],
+#             opponent_data['H2H_DortmundLosses'].values[0],
+#             opponent_data['H2H_AvgGoalsFor'].values[0],
+#             opponent_data['H2H_AvgGoalsAgainst'].values[0],
+#         ]
+        
+#         prediction = model.predict([input_features])[0]
+        
+#         return jsonify({
+#             'success': True,
+#             'prediction': round(max(0, prediction), 2),
+#             'opponent': opponent,
+#             'location': 'Heimspiel' if is_home == 1 else 'Auswärtsspiel',
+#             'h2h_games': int(opponent_data['H2H_Games'].values[0]),
+#             'h2h_wins': int(opponent_data['H2H_DortmundWins'].values[0]),
+#             'h2h_draws': int(opponent_data['H2H_Draws'].values[0]),
+#             'h2h_losses': int(opponent_data['H2H_DortmundLosses'].values[0]),
+#             'dortmund_elo': round(opponent_data['DortmundElo'].values[0], 0),
+#             'opponent_elo': round(opponent_data['OpponentElo'].values[0], 0)
+#         })
+#     except Exception as e:
+#         return jsonify({'success': False, 'error': str(e)}), 500
 @app.route('/predictor')
 def predictor():
-    """Predictor Page"""
-    if model is None:
-        return "Error: Predictor data not loaded", 500
+    opponents = sorted(PREDICTIONS.keys())
     return render_template('predictor.html', opponents=opponents)
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    """API für Vorhersagen"""
     try:
-        if model is None or dortmund_df is None:
-            return jsonify({'success': False, 'error': 'Predictor not loaded'}), 500
-        
         data = request.json
         opponent = data.get('opponent')
-        is_home = int(data.get('is_home'))
+        is_home = int(data.get('is_home', 1))
         
-        opponent_data = dortmund_df[dortmund_df['Opponent'] == opponent].tail(1)
-        
-        if len(opponent_data) == 0:
+        if opponent not in PREDICTIONS:
             return jsonify({'success': False, 'error': f'Gegner nicht gefunden'}), 400
         
-        input_features = [
-            is_home,
-            opponent_data['DortmundElo'].values[0],
-            opponent_data['OpponentElo'].values[0],
-            opponent_data['DortmundForm5'].values[0],
-            opponent_data['OpponentForm5'].values[0],
-            opponent_data['H2H_Games'].values[0],
-            opponent_data['H2H_DortmundWins'].values[0],
-            opponent_data['H2H_Draws'].values[0],
-            opponent_data['H2H_DortmundLosses'].values[0],
-            opponent_data['H2H_AvgGoalsFor'].values[0],
-            opponent_data['H2H_AvgGoalsAgainst'].values[0],
-        ]
+        pred_data = PREDICTIONS[opponent]
         
-        prediction = model.predict([input_features])[0]
+        # Anpassung für Heimvorteil/Auswärts
+        prediction = pred_data['prediction']
+        if is_home == 0:
+            prediction *= 0.85  # Auswärts 15% weniger Tore
         
         return jsonify({
             'success': True,
             'prediction': round(max(0, prediction), 2),
             'opponent': opponent,
             'location': 'Heimspiel' if is_home == 1 else 'Auswärtsspiel',
-            'h2h_games': int(opponent_data['H2H_Games'].values[0]),
-            'h2h_wins': int(opponent_data['H2H_DortmundWins'].values[0]),
-            'h2h_draws': int(opponent_data['H2H_Draws'].values[0]),
-            'h2h_losses': int(opponent_data['H2H_DortmundLosses'].values[0]),
-            'dortmund_elo': round(opponent_data['DortmundElo'].values[0], 0),
-            'opponent_elo': round(opponent_data['OpponentElo'].values[0], 0)
+            'dortmund_elo': pred_data['elo_dortmund'],
+            'opponent_elo': pred_data['elo_opponent']
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
-
 
 if __name__ == '__main__':
     # Nur lokal für Debugging ja
