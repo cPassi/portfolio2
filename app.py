@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from datetime import timedelta
+from pathlib import Path
 import os
 
 
@@ -111,7 +112,8 @@ def projects():
 # DORTMUND PREDICTOR - SETUP BEIM APP START
 # ============================================================
 
-csv_path = 'C:/Users/Pascal Potthoff/footballpredictor/data/processed/dortmund_with_h2h.csv'
+BASE_DIR = Path(__file__).parent
+csv_path = BASE_DIR / 'data' / 'dortmund_with_h2h.csv'
 dortmund_df = None
 model = None
 opponents = []
