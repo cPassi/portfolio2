@@ -226,7 +226,7 @@ def predict():
         is_home = int(data.get('is_home', 1))
         
         if opponent not in PREDICTIONS:
-            return jsonify({'success': False, 'error': f'Gegner nicht gefunden'}), 400
+            return jsonify({'success': False, 'error': f'Gegner "{opponent}" nicht gefunden'}), 400
         
         pred_data = PREDICTIONS[opponent]
         
@@ -241,10 +241,14 @@ def predict():
             'opponent': opponent,
             'location': 'Heimspiel' if is_home == 1 else 'Auswärtsspiel',
             'dortmund_elo': pred_data['elo_dortmund'],
-            'opponent_elo': pred_data['elo_opponent']
+            'opponent_elo': pred_data['elo_opponent'],
+            'h2h_wins': 2,      # ← Beispiel Werte
+            'h2h_draws': 1,
+            'h2h_losses': 1
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     # Nur lokal für Debugging ja
